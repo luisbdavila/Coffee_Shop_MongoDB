@@ -1,0 +1,297 @@
+Agregations
+
+db.Staff.aggregate([
+{
+   $group: { "_id": "$location", "N_employees" : {$sum:1} }
+}, { $sort : {"N_employees" : -1}}
+]).pretty()
+
+db.Receipts.aggregate([
+{
+   $group: { "_id": "$sales_outlet_id", "N_of_transactions" : {$sum:1} }
+}, { $sort : {"N_of_transactions" : -1}}
+]).pretty()
+
+db.Receipts.aggregate([
+{
+   $group: { "_id": "$sales_outlet_id", "Total_Profit" : {$sum: {$multiply : ["$unit_price", "$quantity"]}} }
+}, { $sort : {"Total_Profit" : -1}}
+]).pretty()
+
+db.Receipts.aggregate([
+{
+   $group: { "_id": "$customer_id", "Total_Spent" : {$sum: {$multiply : ["$unit_price", "$quantity"]}} }
+},{ $sort : {"Total_Spent" : -1}}, {$limit : 5} 
+]).pretty()
+
+db.Receipts.aggregate([
+{
+   $group: { "_id": "$product_id", "Total_Quantity" : {$sum: 1} }
+},{ $sort : {"Total_Quantity" : -1}}, {$limit : 5} 
+]).pretty()
+
+db.Receipts.aggregate([
+{
+   $group: { "_id": "$product_id", "Total_Quantity" : {$sum: 1} }
+},{ $sort : {"Total_Quantity" : 1}}, {$limit : 5} 
+]).pretty()
+
+db.Customers.aggregate([
+{
+   $group: { "_id": "$gender", "N_customers" : {$sum:1} }
+}, { $sort : {"N_customers" : -1}}
+]).pretty()
+
+db.Products.aggregate([
+{
+   $group: { "_id": "$product_category", "N_products" : {$sum:1} }
+}, { $sort : {"N_products" : -1}}
+]).pretty()
+
+
+Queries
+
+db.Customers.find({customer_id : {$in: [0,8311,3,5026,8144]}}, 
+		{_id:0, customer_id:1, home_store:1, customer_since:1, 
+		gender:1, birth_year:1}).pretty()
+
+db.Products.find({product_id : {$in: [71,50,59,61,38]}},
+		{_id:0, product_id:1, product_category:1, product:1, 
+		current_wholesale_price:1, current_retail_price:1,
+		new_product_yn:1}).pretty()
+
+db.Products.find({product_id : {$in: [19,18,12,4,14]}},
+		{_id:0, product_id:1, product_category:1, product:1, 
+		current_wholesale_price:1, current_retail_price:1,
+		new_product_yn:1}).pretty()
+
+Validation
+
+staff: 
+
+{
+  $jsonSchema: {
+    required: [
+      'staff_id',
+      'first_name',
+      'last_name'
+    ],
+    properties: {
+      staff_id: {
+        bsonType: 'int',
+        description: 'Must be an integer'
+      },
+      first_name: {
+        bsonType: 'string',
+        description: 'Must be a string'
+      },
+      last_name: {
+        bsonType: 'string',
+        description: 'Must be a string'
+      },
+      position: {
+        bsonType: 'string',
+        description: 'Must be a string'
+      },
+      start_date: {
+        bsonType: 'string',
+        description: 'Must be a string'
+      }
+    }
+  }
+}
+
+recepits: 
+
+{
+  $jsonSchema: {
+    required: [
+      'transaction_id',
+      'sales_outlet_id',
+      'staff_id',
+      'quantity'
+    ],
+    properties: {
+      transaction_id: {
+        bsonType: 'int',
+        description: 'Must be an integer'
+      },
+      sales_outlet_id: {
+        bsonType: 'int',
+        description: 'Must be an integer'
+      },
+      staff_id: {
+        bsonType: 'int',
+        description: 'Must be an integer'
+      },
+      customer_id: {
+        bsonType: 'int',
+        description: 'Must be an integer'
+      },
+      transaction_date: {
+        bsonType: 'date',
+        description: 'Must be a date'
+      },
+      transaction_time: {
+        bsonType: 'string',
+        description: 'Must be a string'
+      },
+      instore_yn: {
+        bsonType: 'string',
+        description: 'Must be a string'
+      },
+      order: {
+        bsonType: 'int',
+        minimum: 0,
+        description: 'Must be a positive integer'
+      },
+      line_item_id: {
+        bsonType: 'int',
+        description: 'Must be an integer'
+      },
+      product_id: {
+        bsonType: 'int',
+        description: 'Must be an integer'
+      },
+      line_item_amount: {
+        bsonType: 'double',
+        description: 'Must be a decimal'
+      },
+      unit_price: {
+        bsonType: 'double',
+        minimum: 0,
+        description: 'Must be a decimal'
+      },
+      promo_item_yn: {
+        bsonType: 'string',
+        'enum': [
+          'Y',
+          'N'
+        ],
+        description: 'Must be Y or N'
+      }
+    }
+  }
+}
+
+customers: 
+
+{
+  $jsonSchema: {
+    required: [
+      'customer_id',
+      'customer_first-name',
+      'birth_year'
+    ],
+    properties: {
+      customer_id: {
+        bsonType: 'int',
+        description: 'Must be an integer'
+      },
+      'customer_first-name': {
+        bsonType: 'string',
+        description: 'Must be a string'
+      },
+      birth_year: {
+        bsonType: 'int',
+        minimum: 1900,
+        description: 'Must be na integer bigger than 1900'
+      },
+      home_store: {
+        bsonType: 'int',
+        description: 'Must be an integer'
+      },
+      customer_email: {
+        bsonType: 'string',
+        description: 'Must be a string'
+      },
+      loyalty_card_number: {
+        bsonType: 'string',
+        description: 'Must be a string'
+      },
+      gender: {
+        bsonType: 'string',
+        'enum': [
+          'M',
+          'F',
+          'N'
+        ],
+        description: 'Must be M or F or N'
+      },
+      customer_since: {
+        bsonType: 'date',
+        description: 'Must be a date'
+      },
+      birthdate: {
+        bsonType: 'date',
+        description: 'Must be a date'
+      }
+    }
+  }
+}
+
+products:
+
+{
+  $jsonSchema: {
+    required: [
+      'product_id',
+      'product'
+    ],
+    properties: {
+      product_id: {
+        bsonType: 'int',
+        description: 'Must be an integer'
+      },
+      product_group: {
+        bsonType: 'string',
+        description: 'Must be a string'
+      },
+      product_category: {
+        bsonType: 'string',
+        description: 'Must be a string'
+      },
+      product_type: {
+        bsonType: 'string',
+        description: 'Must be a string'
+      },
+      product_description: {
+        bsonType: 'string',
+        description: 'Must be a string'
+      },
+      unit_of_measure: {
+        bsonType: 'string',
+        description: 'Must be a string'
+      },
+      current_retail_price: {
+        bsonType: 'string',
+        description: 'Must be a string'
+      },
+      tax_exempt_yn: {
+        bsonType: 'string',
+        'enum': [
+          'Y',
+          'N'
+        ],
+        description: 'Must be Y or N'
+      },
+      promo_yn: {
+        bsonType: 'string',
+        'enum': [
+          'Y',
+          'N'
+        ],
+        description: 'Must be Y or N'
+      },
+      new_product_yn: {
+        bsonType: 'string',
+        'enum': [
+          'Y',
+          'N'
+        ],
+        description: 'Must be Y or N'
+      }
+    }
+  }
+}
+
